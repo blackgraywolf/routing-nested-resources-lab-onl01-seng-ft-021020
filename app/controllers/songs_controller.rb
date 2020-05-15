@@ -1,28 +1,32 @@
+require 'pry'
 class SongsController < ApplicationController
-  #allow the #index and #show actions to handle a valid song for the artist.
-
   def index
+    #binding.pry
     if params[:artist_id]
-      @songs = Artist.find(params[:artist_id]).songs
+      @artist = Artist.find_by(id: params[:artist_id])
+      if @artist.nil?
+        redirect_to artists_path, alert: "Artist not found"
+      else
+        @songs = Song.all
+      end
     else
-      flash[:notice] = "Artists not found."
-      redirect_to artists_path      
+      @songs = Song.all
     end
   end
- #In the #index action, if the artist can't be found, 
- #redirect to the index of artists, and set a flash[:alert] of "Artist not found."
-  
+
   def show
-    if params[:song_id]
-      @song = Song.find(params[:id])
+   if params[:artist_id]
+      @artist = Artist.find_by(id: params[:artist_id])
+      @song = @artist.songs.find_by(id: params[:id])
+      if @song.nil?
+        redirect_to artist_songs_path(@artist), alert: "Song not found"
+      end
     else
-      flash[:notice] = "Song not found."
-      redirect_to artist_songs_path(@artist)
+      @song = Song.find(params[:id])
     end
+  
+
   end
-  #In the songs#show action, if the song can't be found for a given artist, 
-  #redirect to the index of the artist's songs and set a flash[:alert] of "Song not found."
-end
 
   def new
     @song = Song.new
@@ -67,3 +71,4 @@ end
     params.require(:song).permit(:title, :artist_name)
   end
 end
+
